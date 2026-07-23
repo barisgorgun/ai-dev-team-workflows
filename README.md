@@ -22,6 +22,7 @@ kolayca uyarlanır — bkz. [Desteklenen AI Araçları](#desteklenen-ai-araçlar
 
 - [Ön Koşullar](#ön-koşullar)
 - [Hızlı Başlangıç](#hızlı-başlangıç)
+- [install.sh Nasıl Çalışır?](#installsh-nasıl-çalışır)
 - [Örnek Kullanım](#örnek-kullanım)
 - [Workflow Referansı](#workflow-referansı)
 - [Bu Şablonun Varsaydığı Proje Yapısı](#bu-şablonun-varsaydığı-proje-yapısı)
@@ -93,6 +94,72 @@ kolayca uyarlanır — bkz. [Desteklenen AI Araçları](#desteklenen-ai-araçlar
    yeniden başlatmanız gerekebilir) ve projenizi workspace olarak açın.
 6. Agent chat panelinde `/plan-sprint`, `/architect`, `/implement` gibi
    komutları yazarak çağırın.
+
+## install.sh Nasıl Çalışır?
+
+Script en fazla 4 soru sorar, hiçbir adımda sormadan dosya silmez/üzerine
+yazmaz, ve geçersiz bir girdide (kötü seçim, var olmayan proje klasörü)
+yarım bir kurulum bırakmadan durur.
+
+### Karar Ağacı
+
+```mermaid
+flowchart TD
+    Q1{"1) Hangi AI aracı?"} -->|Antigravity| Q2A{"2) Workflow kapsamı?"}
+    Q1 -->|Claude Code| Q2B{"2) Workflow kapsamı?"}
+    Q1 -->|Diğer| C["Yalnızca context dosyaları<br/>(workflow kurulmaz)"]
+
+    Q2A -->|Global| WA1["~/.gemini/antigravity/global_workflows/"]
+    Q2A -->|Proje| Q3A["3) Proje klasörü?"]
+    Q2B -->|Global| WB1["~/.claude/commands/"]
+    Q2B -->|Proje| Q3B["3) Proje klasörü?"]
+
+    Q3A --> WA2["proje/.agent/workflows/"]
+    Q3B --> WB2["proje/.claude/commands/"]
+
+    WA1 --> P{"4) Context dosyalarını<br/>bir projeye de kurayım mı?"}
+    WB1 --> P
+    WA2 --> D1["proje kökü:<br/>AGENTS.md, CLAUDE.md, GEMINI.md"]
+    WB2 --> D1
+
+    P -->|Evet| Q3C["Proje klasörü?"] --> D2["proje kökü:<br/>AGENTS.md, CLAUDE.md, GEMINI.md"]
+    P -->|Hayır| E["Bitti — yalnızca workflow kuruldu"]
+    C --> Q3D["Proje klasörü?"] --> D3["proje kökü:<br/>AGENTS.md, CLAUDE.md, GEMINI.md"]
+```
+
+### Sorular
+
+| # | Soru | Ne zaman sorulur | Seçenekler |
+|---|------|-------------------|-----------|
+| 1 | Hangi AI aracını kullanıyorsunuz? | Her zaman | 1) Antigravity · 2) Claude Code · 3) Diğer |
+| 2 | Workflow'ları nereye kurmak istiyorsunuz? | Yalnızca 1 veya 2 seçildiyse | 1) Global · 2) Belirli bir proje |
+| 3 | Proje klasörünün yolu? | "Proje" kapsamı seçildiyse, ya da context dosyası kurulacaksa | Serbest metin — boş bırakılırsa mevcut dizin |
+| 4 | Context dosyalarını da kurmak ister misiniz? | Yalnızca **global** workflow kurulumunda sorulur — proje-özel kurulumda otomatik "evet" (zaten bir proje klasörünüz var) | Y/n |
+
+### Hedef Klasör Tablosu
+
+| Araç | Kapsam | Workflow hedefi | Context dosyası hedefi |
+|------|--------|------------------|--------------------------|
+| Antigravity | Global | `~/.gemini/antigravity/global_workflows/` | (isteğe bağlı) belirttiğiniz proje kökü |
+| Antigravity | Proje | `<proje>/.agent/workflows/` | aynı proje kökü |
+| Claude Code | Global | `~/.claude/commands/` | (isteğe bağlı) belirttiğiniz proje kökü |
+| Claude Code | Proje | `<proje>/.claude/commands/` | aynı proje kökü |
+| Diğer | — | kurulmaz (bkz. [Desteklenen AI Araçları](#desteklenen-ai-araçları)) | belirttiğiniz proje kökü |
+
+### Güvenlik Davranışı
+
+- **Sormadan üzerine yazmaz.** Hedefte aynı isimde bir dosya varsa
+  `[y/N]` ile onay ister; hayır derseniz (veya Enter'a basarsanız) o dosya
+  atlanır, diğerleri kurulumuna devam eder.
+- **Hatada yarım bırakmaz.** `set -euo pipefail` ile çalışır — geçersiz bir
+  seçim veya var olmayan bir proje klasörü girildiğinde script hata
+  mesajıyla anında durur.
+- **Symlink'leri bozmaz.** `CLAUDE.md`/`GEMINI.md`, `cp -P` ile kopyalanır;
+  hedefte de gerçek symlink olarak kalır, içerik kopyalanıp dosya
+  şişirilmez.
+- **Dosyaları değiştirmez, yalnızca kopyalar.** Script `workflows/` ve
+  context dosyalarının içeriğine dokunmaz — sizin ne yapacağınızı
+  seçmenize göre hangi dosyaların nereye gideceğine karar verir.
 
 ## Örnek Kullanım
 
