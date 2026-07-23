@@ -49,26 +49,40 @@ kolayca uyarlanır — bkz. [Desteklenen AI Araçları](#desteklenen-ai-araçlar
 1. **Repoyu klonlayın:**
    ```bash
    git clone https://github.com/barisgorgun/ai-dev-team-workflows.git
+   cd ai-dev-team-workflows
    ```
-2. **Workflow'ları kurun** — `workflows/` klasöründeki 12 `.md` dosyasını
-   kopyalayın:
-   - **Global** (tüm workspace'lerde kullanılabilir):
-     ```bash
-     cp ai-dev-team-workflows/workflows/*.md ~/.gemini/antigravity/global_workflows/
-     ```
-   - **Workspace-özel** (yalnızca tek bir proje):
-     ```bash
-     mkdir -p <proje-kökü>/.agent/workflows
-     cp ai-dev-team-workflows/workflows/*.md <proje-kökü>/.agent/workflows/
-     ```
-3. **Proje bağlam dosyalarını kurun** — `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`
-   dosyalarını (symlink'ler dahil) hedef projenizin köküne kopyalayın:
+2. **Kurulum script'ini çalıştırın:**
    ```bash
-   cp -P ai-dev-team-workflows/AGENTS.md ai-dev-team-workflows/CLAUDE.md ai-dev-team-workflows/GEMINI.md <proje-kökü>/
+   ./install.sh
+   ```
+   Script size hangi AI aracını kullandığınızı (Antigravity / Claude Code /
+   diğer), workflow'ları global mi yoksa tek bir projeye mi kurmak
+   istediğinizi ve hedef proje klasörünü sorar; ardından `workflows/*.md` ve
+   `AGENTS.md`/`CLAUDE.md`/`GEMINI.md` dosyalarını doğru yerlere kopyalar.
+   Var olan bir dosyanın üzerine yazmadan önce her zaman sorar.
+
+   <details>
+   <summary>Script'i kullanmadan elle kurmak isterseniz</summary>
+
+   Workflow'ları kopyalayın:
+   ```bash
+   # Global (tüm workspace'lerde kullanılabilir)
+   cp workflows/*.md ~/.gemini/antigravity/global_workflows/     # Antigravity
+   cp workflows/*.md ~/.claude/commands/                          # Claude Code
+
+   # Workspace-özel (yalnızca tek bir proje)
+   mkdir -p <proje-kökü>/.agent/workflows && cp workflows/*.md <proje-kökü>/.agent/workflows/    # Antigravity
+   mkdir -p <proje-kökü>/.claude/commands && cp workflows/*.md <proje-kökü>/.claude/commands/     # Claude Code
+   ```
+   Context dosyalarını (symlink'ler dahil) kopyalayın:
+   ```bash
+   cp -P AGENTS.md CLAUDE.md GEMINI.md <proje-kökü>/
    ```
    (`-P` bayrağı symlink'leri symlink olarak kopyalar, içeriğini kopyalamaz.)
-   Ardından `AGENTS.md`'yi açıp kendi projenizin mimarisine/standartlarına göre
-   doldurun.
+   </details>
+
+3. `AGENTS.md`'yi (hedef projenizde) açıp kendi projenizin
+   mimarisine/standartlarına göre doldurun.
 4. **Docs iskeletini oluşturun** (opsiyonel ama önerilir — bkz.
    [Proje Yapısı](#bu-şablonun-varsaydığı-proje-yapısı)):
    ```bash
@@ -221,6 +235,7 @@ Antigravity'ye özgüdür — Claude Code kendi custom command'larını
 ai-dev-team-workflows/
 ├── README.md
 ├── LICENSE
+├── install.sh             # İnteraktif kurulum script'i
 ├── AGENTS.md              # Proje bağlam dosyası (kanonik)
 ├── CLAUDE.md              # symlink → AGENTS.md
 ├── GEMINI.md              # symlink → AGENTS.md
