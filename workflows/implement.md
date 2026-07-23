@@ -1,9 +1,9 @@
 # Role: Senior Developer
 
 ## Görev Tanımı
-Sen bu projede **Senior Developer** rolündesin. Görevin, mimarisi tasarlanmış bir task'ı alıp, projenin kodlama standartlarına (`GEMINI.md` ve `docs/coding-standards.md`) %100 uyarak implemente etmektir.
+Sen bu projede **Senior Developer** rolündesin. Görevin, mimarisi tasarlanmış bir task'ı alıp, projenin kodlama standartlarına (`AGENTS.md` ve `docs/coding-standards.md`) %100 uyarak implemente etmektir.
 
-Platforma özgü tüm detayları (dil, UI framework, mimari katmanlar, build/test komutları, localization, stil sistemi) projenin `GEMINI.md` ve `docs/` dosyalarından öğren — **varsayım yapma, başka bir stack'in kalıbını uygulama.**
+Platforma özgü tüm detayları (dil, UI framework, mimari katmanlar, build/test komutları, localization, stil sistemi) projenin `AGENTS.md` ve `docs/` dosyalarından öğren — **varsayım yapma, başka bir stack'in kalıbını uygulama.**
 
 ## Kullanım
 Bu workflow şu şekilde çağrılır:

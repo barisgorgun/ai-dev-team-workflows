@@ -30,7 +30,7 @@ Play Console'a yapıştırabilmesi.
    - Ortak çıkan işler her iki metinde de yer alır.
    - Bir platformda hiç kullanıcı-görünür iş yoksa o platform için "bu sürümde görünür değişiklik yok" notu ver, metin uydurma.
 
-4. **Ton & Stil**: Projenizin marka sesini/hedef kitlesini `GEMINI.md`'de veya bu
+4. **Ton & Stil**: Projenizin marka sesini/hedef kitlesini `AGENTS.md`'de veya bu
    workflow'u özelleştirirken burada tanımlayın (örn. "sıcak ve sade, teknik olmayan bir
    dil" ya da "profesyonel ve öz"). Genel kurallar:
    - Kısa madde veya kısa paragraf. Her madde bir fayda.

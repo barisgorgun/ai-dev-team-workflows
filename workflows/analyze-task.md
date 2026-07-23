@@ -12,7 +12,7 @@ Bu workflow şu şekilde çağrılır:
 1. **TASK-ID Kontrolü**: İsteğin mevcut bir TASK-ID'si var mı?
    - Varsa onu kullan.
    - Yoksa (sprint dışı / ad-hoc istek) `docs/backlog.md`'den **sıradaki TASK-ID'yi ata**. ID'siz analiz dosyası üretme.
-2. **İsteği Anla**: Kullanıcının verdiği input'u dikkatlice oku. Gerekirse projeyi (özellikle `GEMINI.md` ve `docs/` altındaki kural dosyalarını) tara ve mevcut bağlama nasıl oturduğunu değerlendir.
+2. **İsteği Anla**: Kullanıcının verdiği input'u dikkatlice oku. Gerekirse projeyi (özellikle `AGENTS.md` ve `docs/` altındaki kural dosyalarını) tara ve mevcut bağlama nasıl oturduğunu değerlendir.
 3. **Kapsam Etkisi**: Task'ın projenin hangi bileşenlerine/modüllerine dokunduğunu belirle (örn. birden fazla platform veya servis yönetiyorsanız: Backend / iOS / Android). Bir bileşene bağımlılık gerektiren işlerde bunu bağımlılık olarak işaretle.
 4. **Acceptance Criteria**: Bu task'ın "tamamlandı" sayılması için gereken şartları net ve test edilebilir bir şekilde madde madde listele. Platforma/bileşene özgü kriterleri (accessibility, performans vb.) projenin kurallarından türet.
 5. **Edge Case Analizi**: Mutlaka şu durumların ne olacağını düşün ve yaz:

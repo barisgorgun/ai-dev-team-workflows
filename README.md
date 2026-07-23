@@ -1,18 +1,26 @@
-# AI Dev Team Workflows (Google Antigravity)
+# AI Dev Team Workflows
 
-12 workflow dosyası, tek bir AI agent'ı (Antigravity / Gemini) sırayla farklı yazılım
-ekibi rollerine büründürerek uçtan uca bir "task → analiz → mimari → kod → review →
+12 workflow dosyası, tek bir AI coding agent'ı sırayla farklı yazılım ekibi
+rollerine büründürerek uçtan uca bir "task → analiz → mimari → kod → review →
 PR" hattı çalıştırır: Business Analyst, Software Architect, Senior Developer, Code
 Review Sentinel, QA Engineer, DevOps/Release Manager, Project Manager, Scrum Master,
 PR Author, Release Notes Writer, UI Designer.
 
+Workflow'ların çağrılma mekanizması (`workflows/*.md`, `/komut-adı` ile tetiklenir)
+[Google Antigravity](https://antigravity.google) formatındadır, ama proje bağlam
+dosyası (`AGENTS.md`) ve içerik tamamen taşınabilir plain Markdown olduğu için
+Claude Code, Cursor, Windsurf, Codex CLI gibi araçlara da kolayca uyarlanır — bkz.
+[Desteklenen AI Araçları](#desteklenen-ai-araçları).
+
 ## Kurulum
 
-1. Bu repoyu klonlayın (`git clone git@github.com:barisgorgun/ai-dev-team-workflows.git`) ve `workflows/` klasöründeki 12 `.md` dosyasını kopyalayın:
+1. Bu repoyu klonlayın: `git clone git@github.com:barisgorgun/ai-dev-team-workflows.git`
+2. `workflows/` klasöründeki 12 `.md` dosyasını kopyalayın:
    - **Global** (tüm workspace'lerde kullanılabilir): `~/.gemini/antigravity/global_workflows/`
    - **Workspace-özel** (yalnızca tek bir proje): `<proje-kökü>/.agent/workflows/`
-2. Antigravity'yi açın (zaten açıksa workflow listesini yenilemesi için yeniden başlatmanız gerekebilir).
-3. Agent chat panelinde `/architect`, `/implement`, `/plan-sprint` gibi komutları yazarak çağırın.
+3. `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` dosyalarını (symlink'ler dahil) projenizin köküne kopyalayın ve içeriğini kendi projenize göre doldurun — bkz. [Desteklenen AI Araçları](#desteklenen-ai-araçları).
+4. Antigravity'yi açın (zaten açıksa workflow listesini yenilemesi için yeniden başlatmanız gerekebilir).
+5. Agent chat panelinde `/architect`, `/implement`, `/plan-sprint` gibi komutları yazarak çağırın.
 
 ## Bu şablonun varsaydığı proje yapısı
 
@@ -20,7 +28,7 @@ Workflow'lar aşağıdaki dosya/klasörlere okur-yazar. Hiçbiri zorunlu değil 
 çalıştırmada kendileri oluşturulabilir — ama boş bir iskelet hazırlamak akışı hızlandırır:
 
 ```
-GEMINI.md                          # Proje kuralları (veya AGENTS.md / README.md)
+AGENTS.md                          # Proje kuralları (bkz. "Desteklenen AI Araçları")
 docs/
 ├── architecture.md                # Katman yapısı, dosya organizasyonu kuralları
 ├── coding-standards.md            # Kod yazım standartları
@@ -51,12 +59,42 @@ Bu dosya adları/yolları **örnektir** — projenizde farklı bir konvansiyon v
 Bağımsız çağrılabilenler: `/daily-standup`, `/run-tests`, `/review-code`, `/create-pr`,
 `/address-review`, `/release-notes`, `/release-sprint`, `/design-screen`.
 
+## Desteklenen AI Araçları
+
+Proje bağlam/kural dosyası olarak tek bir kaynak var: **`AGENTS.md`**. Bu, 2026
+itibarıyla OpenAI Codex, GitHub Copilot, Cursor, Windsurf, Amp, Devin, Aider,
+Zed, Jules, JetBrains Junie ve Claude Code dahil çoğu aracın **native olarak**
+okuduğu açık standarttır ([agents.md](https://agents.md)).
+
+Claude Code ve Gemini CLI/Google Antigravity kendi isimlerindeki dosyayı arar;
+bu yüzden `CLAUDE.md` ve `GEMINI.md`, `AGENTS.md`'ye **sembolik link** olarak
+repoda hazır bulunuyor — üç dosyayı ayrı ayrı güncel tutmanıza gerek yok:
+
+| Araç | Okuduğu dosya | Bu repodaki karşılığı |
+|------|----------------|------------------------|
+| Claude Code | `CLAUDE.md` | symlink → `AGENTS.md` |
+| Gemini CLI / Google Antigravity | `GEMINI.md` | symlink → `AGENTS.md` |
+| Codex CLI, Copilot, Cursor, Windsurf, Amp, Devin, Aider, Zed, Jules, JetBrains Junie | `AGENTS.md` | doğrudan |
+
+Kendi projenize kurarken bu üç dosyayı da birlikte kopyalayın (`git clone` zaten
+symlink'leri korur). Listede olmayan bir araç kullanıyorsanız aynı deseni
+kendiniz uygulayabilirsiniz: `ln -s AGENTS.md <aracın-beklediği-dosya-adı>`.
+
+Workflow'ların **çağrılma mekanizması** (`workflows/*.md`, `/komut-adı`) ise
+Antigravity'ye özgüdür — Claude Code kendi custom command'larını
+`.claude/commands/*.md` altında bekler, Cursor `.cursor/rules/` kullanır vb.
+İçerik aynı kalır, yalnızca dosyaları o aracın beklediği klasöre kopyalamanız
+(gerekirse frontmatter eklemeniz) yeterlidir.
+
 ## Repo Yapısı
 
 ```
 ai-dev-team-workflows/
 ├── README.md
 ├── LICENSE
+├── AGENTS.md              # Proje bağlam dosyası (kanonik)
+├── CLAUDE.md              # symlink → AGENTS.md
+├── GEMINI.md              # symlink → AGENTS.md
 └── workflows/
     ├── analyze-task.md      # Business Analyst
     ├── architect.md         # Software Architect
