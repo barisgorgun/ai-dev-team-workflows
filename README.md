@@ -25,6 +25,7 @@ kolayca uyarlanır — bkz. [Desteklenen AI Araçları](#desteklenen-ai-araçlar
 - [install.sh Nasıl Çalışır?](#installsh-nasıl-çalışır)
 - [Örnek Kullanım](#örnek-kullanım)
 - [Workflow Referansı](#workflow-referansı)
+- [Claude Code Agent Katmanı (opsiyonel)](#claude-code-agent-katmanı-opsiyonel)
 - [Bu Şablonun Varsaydığı Proje Yapısı](#bu-şablonun-varsaydığı-proje-yapısı)
 - [Desteklenen AI Araçları](#desteklenen-ai-araçları)
 - [Repo Yapısı](#repo-yapısı)
@@ -138,13 +139,16 @@ flowchart TD
 
 ### Hedef Klasör Tablosu
 
-| Araç | Kapsam | Workflow hedefi | Context dosyası hedefi |
-|------|--------|------------------|--------------------------|
-| Antigravity | Global | `~/.gemini/antigravity/global_workflows/` | (isteğe bağlı) belirttiğiniz proje kökü |
-| Antigravity | Proje | `<proje>/.agent/workflows/` | aynı proje kökü |
-| Claude Code | Global | `~/.claude/commands/` | (isteğe bağlı) belirttiğiniz proje kökü |
-| Claude Code | Proje | `<proje>/.claude/commands/` | aynı proje kökü |
-| Diğer | — | kurulmaz (bkz. [Desteklenen AI Araçları](#desteklenen-ai-araçları)) | belirttiğiniz proje kökü |
+| Araç | Kapsam | Workflow hedefi | Agent hedefi | Context dosyası hedefi |
+|------|--------|------------------|---------------|--------------------------|
+| Antigravity | Global | `~/.gemini/antigravity/global_workflows/` | — | (isteğe bağlı) belirttiğiniz proje kökü |
+| Antigravity | Proje | `<proje>/.agent/workflows/` | — | aynı proje kökü |
+| Claude Code | Global | `~/.claude/commands/` | `~/.claude/agents/` | (isteğe bağlı) belirttiğiniz proje kökü |
+| Claude Code | Proje | `<proje>/.claude/commands/` | `<proje>/.claude/agents/` | aynı proje kökü |
+| Diğer | — | kurulmaz (bkz. [Desteklenen AI Araçları](#desteklenen-ai-araçları)) | kurulmaz | belirttiğiniz proje kökü |
+
+Agent kurulumu yalnızca Claude Code seçildiğinde otomatik çalışır — bkz.
+[Claude Code Agent Katmanı](#claude-code-agent-katmanı-opsiyonel).
 
 ### Güvenlik Davranışı
 
@@ -241,6 +245,37 @@ flowchart LR
     F --> I["/release-sprint"]
 ```
 
+## Claude Code Agent Katmanı (opsiyonel)
+
+`workflows/*.md` tek bir agent'ın sırayla farklı rollere büründüğü, her AI aracında
+çalışan tek-persona modelini kullanır. Claude Code ayrıca **subagent delegasyonunu**
+(bir ana thread'in `Task` tool ile isimlendirilmiş, izole bağlamlı bir alt-agent'ı
+çağırması) destekler — bu repo, Claude Code kullanıcıları için `agents/` altında
+opsiyonel bir ikinci katman sunar:
+
+| Agent | Rol | Karşılık geldiği workflow |
+|-------|-----|----------------------------|
+| `orchestrator` | Baş koordinatör — feature isteğini fazlara böler, diğer agent'ları sırayla çağırır | `plan-sprint.md` + `implement.md`'nin tek-agent alternatifi |
+| `architect` | Software Architect | `architect.md` |
+| `code-reviewer` | Code Review Sentinel | `review-code.md` |
+| `test-engineer` | QA/test yazımı | (bkz. `implement.md`'nin TDD adımı) |
+| `security-reviewer` | Güvenlik derin taraması — `code-reviewer` sonrası **her zaman** çalışır | `review-code.md` Adım 5 |
+
+Bu iki katman birbirini dışlamaz: `workflows/review-code.md` Adım 5, reponun agent
+setinde `security-reviewer` **tanımlıysa** onu çağırır, tanımlı değilse (Claude Code
+dışındaki araçlarda, ya da agent'lar kurulmadıysa) o adımı atlayıp rapora bunu
+belirten bir not düşer — akış hiçbir zaman kilitlenmez.
+
+**Kurulum:** `install.sh`'ta "Claude Code" seçilirse (global veya proje-özel)
+`agents/*.md` dosyaları otomatik olarak ilgili `.claude/agents/` klasörüne kopyalanır
+— ayrı bir adım gerekmez. Diğer araçlarda bu katman kurulmaz, yalnızca `workflows/`
+kullanılır.
+
+**Genericize edilmemiş roller:** Bu 5 agent platform-bağımsızdır (dil/framework'ü
+`docs/architecture.md` + `docs/coding-standards.md`'den çıkarır). UI tasarımı gibi
+tamamen projeye özel roller için ayrı bir agent bundle edilmiyor — `orchestrator`
+FAZ 2'de bunun yerine `workflows/design-screen.md`'yi kullanır.
+
 ## Bu Şablonun Varsaydığı Proje Yapısı
 
 Workflow'lar aşağıdaki dosya/klasörlere okur-yazar. Hiçbiri zorunlu değil — ilk
@@ -252,6 +287,7 @@ docs/
 ├── architecture.md                # Katman yapısı, dosya organizasyonu kuralları
 ├── coding-standards.md            # Kod yazım standartları
 ├── review-checklist.md            # Code review kontrol listesi
+├── security-profile.md            # (opsiyonel) security-reviewer agent'ının okuduğu bilinen risk/tarama-odağı dosyası
 ├── backlog.md                     # Task listesi, sıradaki TASK-ID kaynağı
 ├── progress.md                    # Güncel sprint panosu (To Do / In Progress / ...)
 ├── releases.md                    # Sürüm kaydı
@@ -306,19 +342,25 @@ ai-dev-team-workflows/
 ├── AGENTS.md              # Proje bağlam dosyası (kanonik)
 ├── CLAUDE.md              # symlink → AGENTS.md
 ├── GEMINI.md              # symlink → AGENTS.md
-└── workflows/
-    ├── analyze-task.md      # Business Analyst
-    ├── architect.md         # Software Architect
-    ├── implement.md         # Senior Developer
-    ├── review-code.md       # Code Review Sentinel
-    ├── run-tests.md         # QA Engineer
-    ├── create-pr.md         # DevOps / Release Manager
-    ├── address-review.md    # PR Author
-    ├── plan-sprint.md       # Project Manager
-    ├── daily-standup.md     # Scrum Master
-    ├── release-notes.md     # Release Notes Writer
-    ├── release-sprint.md    # Release Manager (store submission)
-    └── design-screen.md     # UI Designer (prompt engineer)
+├── workflows/
+│   ├── analyze-task.md      # Business Analyst
+│   ├── architect.md         # Software Architect
+│   ├── implement.md         # Senior Developer
+│   ├── review-code.md       # Code Review Sentinel
+│   ├── run-tests.md         # QA Engineer
+│   ├── create-pr.md         # DevOps / Release Manager
+│   ├── address-review.md    # PR Author
+│   ├── plan-sprint.md       # Project Manager
+│   ├── daily-standup.md     # Scrum Master
+│   ├── release-notes.md     # Release Notes Writer
+│   ├── release-sprint.md    # Release Manager (store submission)
+│   └── design-screen.md     # UI Designer (prompt engineer)
+└── agents/                # Claude Code'a özel subagent katmanı (opsiyonel, bkz. yukarıdaki bölüm)
+    ├── orchestrator.md      # Baş koordinatör
+    ├── architect.md         # Software Architect (subagent versiyonu)
+    ├── code-reviewer.md     # Code Review Sentinel (subagent versiyonu)
+    ├── test-engineer.md     # Test yazımı
+    └── security-reviewer.md # Güvenlik derin taraması
 ```
 
 ## Özelleştirme Notları
@@ -338,6 +380,12 @@ ai-dev-team-workflows/
   olarak bırakır — kendi ürününüzün marka sesini siz tanımlarsınız.
 
 ## Sık Sorulan Sorular
+
+**`agents/` ile `workflows/` arasındaki fark ne?**
+`workflows/` her AI aracında çalışır (tek agent sırayla rollere bürünür).
+`agents/` yalnızca Claude Code'a özeldir ve subagent delegasyonu kullanır
+(`orchestrator` diğer 4 agent'ı `Task` tool ile çağırır). Claude Code
+kullanmıyorsanız `agents/` sizi ilgilendirmez, `workflows/` tek başına yeterlidir.
 
 **Antigravity dışında bir araç kullanıyorum, yine de işe yarar mı?**
 Evet — `AGENTS.md`/`CLAUDE.md` proje bağlamını her araç zaten okuyacaktır.
